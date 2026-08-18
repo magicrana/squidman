@@ -96,11 +96,9 @@ curl -sSL https://raw.githubusercontent.com/magicrana/squidman/main/setup.sh | s
 squidman/
 ├── server.py                # FastAPI REST API backend + Embedded SPA Dashboard
 ├── setup.sh                 # Multi-distro Linux installer & systemd configurator
-├── install.sh               # Remote 1-liner downloader & bootstrapper
 ├── uninstall.sh             # Interactive & automated uninstaller script
 ├── squid.conf.template      # Production zero-leakage Squid configuration
 ├── squid-panel.service      # Systemd service unit definition
-├── test_suite.py            # Automated integration & regression test suite
 ├── requirements.txt         # Python dependencies (FastAPI, Uvicorn, Passlib, Bcrypt)
 ├── LICENSE                  # MIT License
 ├── CONTRIBUTING.md          # Guidelines for contributing
