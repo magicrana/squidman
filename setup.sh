@@ -143,7 +143,7 @@ if [[ -f "${SCRIPT_DIR}/server.py" && -f "${SCRIPT_DIR}/squid.conf.template" && 
     cp -u "${SCRIPT_DIR}/uninstall.sh" "${INSTALL_DIR}/" 2>/dev/null || cp "${SCRIPT_DIR}/uninstall.sh" "${INSTALL_DIR}/" || true
     cp -u "${SCRIPT_DIR}/setup.sh" "${INSTALL_DIR}/" 2>/dev/null || cp "${SCRIPT_DIR}/setup.sh" "${INSTALL_DIR}/" || true
 else
-    echo -e "${PURPLE}[INFO] Downloading latest live files from GitHub (${CYAN}${GITHUB_REPO}@${GITHUB_BRANCH}${BLUE})...${NC}"
+    echo -e "${CYAN}[INFO] Downloading latest live files...${NC}"
     
     # Try downloading full repo tarball first for speed & atomic unpack
     TARBALL_FETCHED=false
