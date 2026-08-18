@@ -16,7 +16,7 @@ BLUE='\033[0;34m'
 PURPLE='\033[0;35m'
 CYAN='\033[0;36m'
 GREY='\033[38;5;220m'
-LIGHTGREY='\033[38;5;208m'
+ORANGE='\033[38;5;208m'
 BOLD='\033[1m'
 NC='\033[0m' # No Color
 
@@ -48,7 +48,7 @@ GITHUB_BRANCH="${GITHUB_BRANCH:-main}"
 RAW_BASE_URL="https://raw.githubusercontent.com/${GITHUB_REPO}/${GITHUB_BRANCH}"
 TARBALL_URL="https://github.com/${GITHUB_REPO}/archive/refs/heads/${GITHUB_BRANCH}.tar.gz"
 
-echo -e "${LIGHTGREY}[1/9] Installing system dependencies (Squid, Apache2 utils, Python 3, NetworkManager, UFW)...${NC}"
+echo -e "${ORANGE}[1/9] Installing system dependencies (Squid, Apache2 utils, Python 3, NetworkManager, UFW)...${NC}"
 export DEBIAN_FRONTEND=noninteractive
 apt-get update -y -qq
 apt-get install -y --no-install-recommends -qq \
@@ -68,7 +68,7 @@ apt-get install -y --no-install-recommends -qq \
     procps
 
 # 2. Detect basic_ncsa_auth binary path
-echo -e "${LIGHTGREY}[2/9] Detecting Squid Basic Auth helper binary...${NC}"
+echo -e "${ORANGE}[2/9] Detecting Squid Basic Auth helper binary...${NC}"
 AUTH_HELPER=""
 CANDIDATES=(
     "/usr/lib/squid/basic_ncsa_auth"
@@ -99,13 +99,13 @@ else
 fi
 
 # 3. Prepare Directories
-echo -e "${LIGHTGREY}[3/9] Creating application directories...${NC}"
+echo -e "${ORANGE}[3/9] Creating application directories...${NC}"
 mkdir -p "${INSTALL_DIR}"
 mkdir -p "${INSTALL_DIR}/data"
 mkdir -p "${SQUID_CONF_DIR}"
 
 # 4. Initialize Squid Auth, IP Whitelist, and Outgoing IP routing storage
-echo -e "${LIGHTGREY}[4/9] Initializing Squid ACL and routing storage files...${NC}"
+echo -e "${ORANGE}[4/9] Initializing Squid ACL and routing storage files...${NC}"
 touch "${SQUID_CONF_DIR}/users.pwd"
 if [[ ! -s "${SQUID_CONF_DIR}/allowed_ips.txt" ]]; then
     echo -e "# Whitelisted client IPs\n127.0.0.1/32" > "${SQUID_CONF_DIR}/allowed_ips.txt"
@@ -132,7 +132,7 @@ chown root:"${SQUID_USER}" "${SQUID_CONF_DIR}/users.pwd" "${SQUID_CONF_DIR}/allo
 chmod 640 "${SQUID_CONF_DIR}/users.pwd" "${SQUID_CONF_DIR}/allowed_ips.txt" "${SQUID_CONF_DIR}/outgoing_ips.conf"
 
 # 5. Deploy Latest Application Source Files to /opt/squid-panel (Live GitHub Fetch or Local Copy)
-echo -e "${LIGHTGREY}[5/9] Deploying latest SquidMan source files to ${INSTALL_DIR}...${NC}"
+echo -e "${ORANGE}[5/9] Deploying latest SquidMan source files to ${INSTALL_DIR}...${NC}"
 
 if [[ -f "${SCRIPT_DIR}/server.py" && -f "${SCRIPT_DIR}/squid.conf.template" && "${SCRIPT_DIR}" != "${INSTALL_DIR}" ]]; then
     echo -e "${GREEN}[INFO] Deploying from local directory (${SCRIPT_DIR})...${NC}"
@@ -169,7 +169,7 @@ fi
 chmod +x "${INSTALL_DIR}/setup.sh" "${INSTALL_DIR}/uninstall.sh" 2>/dev/null || true
 
 # 6. Deploy Squid Configuration
-echo -e "${LIGHTGREY}[6/9] Deploying high-anonymity Squid configuration...${NC}"
+echo -e "${ORANGE}[6/9] Deploying high-anonymity Squid configuration...${NC}"
 if [[ -f "${SQUID_CONF_DIR}/squid.conf" ]]; then
     cp "${SQUID_CONF_DIR}/squid.conf" "${SQUID_CONF_DIR}/squid.conf.backup.$(date +%s)"
 fi
@@ -177,7 +177,7 @@ fi
 sed "s|__AUTH_HELPER_PATH__|${AUTH_HELPER}|g" "${INSTALL_DIR}/squid.conf.template" > "${SQUID_CONF_DIR}/squid.conf"
 
 # 7. Generate API Key & .env
-echo -e "${LIGHTGREY}[7/9] Configuring master credentials & environment...${NC}"
+echo -e "${ORANGE}[7/9] Configuring master credentials & environment...${NC}"
 if [[ ! -f "${INSTALL_DIR}/.env" ]]; then
     GENERATED_KEY=$(openssl rand -hex 16)
     cat <<EOF > "${INSTALL_DIR}/.env"
@@ -198,13 +198,13 @@ else
 fi
 
 # 8. Set Up Python Virtual Environment
-echo -e "${LIGHTGREY}[8/9] Setting up Python virtual environment & installing dependencies...${NC}"
+echo -e "${ORANGE}[8/9] Setting up Python virtual environment & installing dependencies...${NC}"
 python3 -m venv "${INSTALL_DIR}/venv"
 "${INSTALL_DIR}/venv/bin/pip" install --upgrade pip --quiet
 "${INSTALL_DIR}/venv/bin/pip" install -r "${INSTALL_DIR}/requirements.txt" --quiet
 
 # 9. Configure Systemd Service & Firewall
-echo -e "${LIGHTGREY}[9/9] Installing systemd service unit & enabling startup daemons...${NC}"
+echo -e "${ORANGE}[9/9] Installing systemd service unit & enabling startup daemons...${NC}"
 cp "${INSTALL_DIR}/squid-panel.service" /etc/systemd/system/squid-panel.service
 systemctl daemon-reload
 
