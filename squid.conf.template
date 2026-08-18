@@ -1,0 +1,131 @@
+# ==============================================================================
+# Production High-Anonymity Elite Squid 5+ Configuration
+# Managed by Squid Management Panel & REST API
+# ==============================================================================
+
+# ------------------------------------------------------------------------------
+# Network & Port Configuration
+# ------------------------------------------------------------------------------
+http_port 3128
+
+# Set visible hostname to an anonymous generic string
+visible_hostname anonymous-proxy-gateway
+
+# ------------------------------------------------------------------------------
+# Authentication Helper Configuration (htpasswd / bcrypt via basic_ncsa_auth)
+# ------------------------------------------------------------------------------
+auth_param basic program __AUTH_HELPER_PATH__ /etc/squid/users.pwd
+auth_param basic children 20 startup=5 idle=3
+auth_param basic realm High-Anonymity Commercial Proxy Gateway
+auth_param basic credentialsttl 2 hours
+auth_param basic casesensitive on
+
+# ------------------------------------------------------------------------------
+# Access Control Lists (ACLs)
+# ------------------------------------------------------------------------------
+acl SSL_ports port 443
+acl Safe_ports port 80          # http
+acl Safe_ports port 21          # ftp
+acl Safe_ports port 443         # https
+acl Safe_ports port 70          # gopher
+acl Safe_ports port 210         # wais
+acl Safe_ports port 1025-65535  # unregistered ports
+acl Safe_ports port 280         # http-mgmt
+acl Safe_ports port 488         # gss-http
+acl Safe_ports port 591         # filemaker
+acl Safe_ports port 777         # multiling http
+acl CONNECT method CONNECT
+
+# Whitelisted source IPs / CIDRs
+acl allowed_ips src "/etc/squid/allowed_ips.txt"
+
+# Authenticated users
+acl authenticated_users proxy_auth REQUIRED
+
+# ------------------------------------------------------------------------------
+# Access Rules & Precedence
+# ------------------------------------------------------------------------------
+# 1. Deny requests to unsafe ports
+http_access deny !Safe_ports
+
+# 2. Deny CONNECT to non-SSL ports
+http_access deny CONNECT !SSL_ports
+
+# 3. Allow localhost management
+http_access allow localhost manager
+http_access deny manager
+
+# 4. Allow requests from whitelisted client IPs (bypasses username/password auth)
+http_access allow allowed_ips
+
+# ------------------------------------------------------------------------------
+# Dedicated Port Listeners, Outbound Routing & User Pool Restrictions
+# Load outgoing_ips.conf before global auth rules to enforce user IP pool ACLs
+# ------------------------------------------------------------------------------
+include /etc/squid/outgoing_ips.conf
+
+# 5. Allow requests from authenticated users (for users with full/unrestricted pool access)
+http_access allow authenticated_users
+
+# 6. Allow localhost
+http_access allow localhost
+
+# 7. Deny all other access
+http_access deny all
+
+# ------------------------------------------------------------------------------
+# Elite / High-Anonymity Header Stripping (Zero Leakage)
+# ------------------------------------------------------------------------------
+forwarded_for delete
+via off
+
+# Strip request headers that leak client IP or identity
+request_header_access X-Forwarded-For deny all
+request_header_access Via deny all
+request_header_access From deny all
+request_header_access Server deny all
+
+# Explicitly preserve required proxy protocol headers
+request_header_access Authorization allow all
+request_header_access Proxy-Authorization allow all
+request_header_access Host allow all
+request_header_access User-Agent allow all
+request_header_access Accept allow all
+request_header_access Accept-Language allow all
+request_header_access Accept-Encoding allow all
+request_header_access Accept-Charset allow all
+request_header_access Referer allow all
+request_header_access Content-Length allow all
+request_header_access Content-Type allow all
+request_header_access Content-Encoding allow all
+request_header_access Connection allow all
+request_header_access Keep-Alive allow all
+request_header_access Cookie allow all
+request_header_access All allow all
+
+# Strip reply headers identifying Squid proxy
+reply_header_access Via deny all
+reply_header_access Server deny all
+reply_header_access X-Cache deny all
+reply_header_access X-Cache-Lookup deny all
+reply_header_access X-Squid-Error deny all
+
+# ------------------------------------------------------------------------------
+# High-Throughput Stream Forwarding (Zero Caching)
+# ------------------------------------------------------------------------------
+cache deny all
+cache_mem 64 MB
+maximum_object_size 0 KB
+maximum_object_size_in_memory 0 KB
+
+# ------------------------------------------------------------------------------
+# DNS & Performance Tuning
+# ------------------------------------------------------------------------------
+dns_v4_first on
+dns_nameservers 1.1.1.1 8.8.8.8 1.0.0.1 8.8.4.4
+shutdown_lifetime 1 seconds
+client_lifetime 1 days
+max_filedescriptors 65535
+coredump_dir /var/spool/squid
+access_log /var/log/squid/access.log squid
+logfile_rotate 10

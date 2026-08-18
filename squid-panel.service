@@ -1,0 +1,22 @@
+[Unit]
+Description=Squid Proxy Management Panel & REST API
+After=network.target network-online.target NetworkManager.service squid.service
+Wants=network-online.target squid.service NetworkManager.service
+
+[Service]
+Type=simple
+User=root
+WorkingDirectory=/opt/squid-panel
+EnvironmentFile=-/opt/squid-panel/.env
+ExecStart=/opt/squid-panel/venv/bin/python3 /opt/squid-panel/server.py
+Restart=always
+RestartSec=3
+LimitNOFILE=65535
+StandardOutput=journal
+StandardError=journal
+
+# Security sandbox relaxation needed for squid & network management commands
+AmbientCapabilities=CAP_NET_BIND_SERVICE
+
+[Install]
+WantedBy=multi-user.target
