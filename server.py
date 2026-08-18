@@ -2289,7 +2289,7 @@ DASHBOARD_HTML = """<!DOCTYPE html>
       <button onclick="switchTab('users')" id="tabBtn-users" 
               class="tab-button px-4 py-2.5 rounded-xl font-semibold text-sm transition-all flex items-center gap-2 bg-brand-500 text-black shadow-lg shadow-brand-500/20">
         <i class="fa-solid fa-user-lock"></i>
-        <span>Proxy Users (htpasswd)</span>
+        <span>Proxy Users</span>
       </button>
       <button onclick="switchTab('interfaces')" id="tabBtn-interfaces" 
               class="tab-button px-4 py-2.5 rounded-xl font-semibold text-sm transition-all flex items-center gap-2 bg-dark-900 text-slate-300 hover:text-white border border-transparent hover:border-white/10">
@@ -2735,7 +2735,7 @@ DASHBOARD_HTML = """<!DOCTYPE html>
             </div>
             <input type="text" id="modalPassword" placeholder="Enter or generate password" 
                    class="w-full px-3.5 py-2.5 bg-dark-950 border border-slate-700/80 rounded-xl text-white font-mono text-sm focus:outline-none focus:border-brand-500">
-            <p id="modalPasswordHelp" class="text-[11px] text-slate-500 mt-1 hidden">Leave blank to keep existing password, or enter new password.</p>
+            <p id="modalPasswordHelp" class="text-[11px] text-slate-500 mt-1 hidden">Leave blank to keep existing, or enter new password.</p>
           </div>
         </div>
 
@@ -3727,7 +3727,7 @@ DASHBOARD_HTML = """<!DOCTYPE html>
       const cancelBtn = document.getElementById('assignPortCancelBtn');
       if (submitBtn) {
         submitBtn.disabled = true;
-        submitBtn.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin mr-2"></i> <span>Saving Mapping...</span>';
+        submitBtn.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin mr-2"></i> <span>Saving...</span>';
       }
       if (cancelBtn) cancelBtn.disabled = true;
 
@@ -4187,7 +4187,7 @@ DASHBOARD_HTML = """<!DOCTYPE html>
       const cancelBtn = document.getElementById('userModalCancelBtn');
       if (submitBtn) {
         submitBtn.disabled = true;
-        submitBtn.innerHTML = `<i class="fa-solid fa-circle-notch fa-spin mr-2"></i> <span>${isEditingUser ? 'Updating User Config...' : 'Creating User...'}</span>`;
+        submitBtn.innerHTML = `<i class="fa-solid fa-circle-notch fa-spin mr-2"></i> <span>${isEditingUser ? 'Updating...' : 'Creating...'}</span>`;
       }
       if (cancelBtn) cancelBtn.disabled = true;
 
@@ -4261,7 +4261,7 @@ DASHBOARD_HTML = """<!DOCTYPE html>
       const cancelBtn = document.getElementById('changePassCancelBtn');
       if (submitBtn) {
         submitBtn.disabled = true;
-        submitBtn.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin mr-2"></i> <span>Updating Password...</span>';
+        submitBtn.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin mr-2"></i> <span>Updating...</span>';
       }
       if (cancelBtn) cancelBtn.disabled = true;
 
@@ -4482,7 +4482,7 @@ DASHBOARD_HTML = """<!DOCTYPE html>
       const cancelBtn = document.getElementById('modalSecCancelBtn');
       if (submitBtn) {
         submitBtn.disabled = true;
-        submitBtn.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin mr-2"></i> <span>Binding IP & Port...</span>';
+        submitBtn.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin mr-2"></i> <span>Binding...</span>';
       }
       if (cancelBtn) cancelBtn.disabled = true;
 
@@ -4648,7 +4648,7 @@ DASHBOARD_HTML = """<!DOCTYPE html>
       const cancelBtn = document.getElementById('addIpCancelBtn');
       if (submitBtn) {
         submitBtn.disabled = true;
-        submitBtn.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin mr-2"></i> <span>Whitelisting IP...</span>';
+        submitBtn.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin mr-2"></i> <span>Whitelisting...</span>';
       }
       if (cancelBtn) cancelBtn.disabled = true;
 
