@@ -1,0 +1,2 @@
+# squideman
+Proxy Gateway Manager
