@@ -70,19 +70,7 @@
 
 ## 🚀 Quick Start & Installation
 
-### Option 1: Git Clone (Recommended)
-
-```bash
-# 1. Clone repository
-git clone https://github.com/magicrana/squidman.git /opt/squid-panel
-cd /opt/squid-panel
-
-# 2. Run automated setup (supports Ubuntu 20.04+, 22.04+, 24.04+, Debian 11+, 12+)
-sudo chmod +x setup.sh uninstall.sh
-sudo ./setup.sh
-```
-
-### Option 2: Remote One-Liner (curl)
+###  Remote One-Liner (curl)
 
 ```bash
 curl -sSL https://raw.githubusercontent.com/magicrana/squidman/main/setup.sh | sudo bash
