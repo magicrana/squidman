@@ -46,7 +46,7 @@ GITHUB_BRANCH="${GITHUB_BRANCH:-main}"
 RAW_BASE_URL="https://raw.githubusercontent.com/${GITHUB_REPO}/${GITHUB_BRANCH}"
 TARBALL_URL="https://github.com/${GITHUB_REPO}/archive/refs/heads/${GITHUB_BRANCH}.tar.gz"
 
-echo -e "${BLUE}[1/9] Installing system dependencies (Squid, Apache2 utils, Python 3, NetworkManager, UFW)...${NC}"
+echo -e "${CYAN}[1/9] Installing system dependencies (Squid, Apache2 utils, Python 3, NetworkManager, UFW)...${NC}"
 export DEBIAN_FRONTEND=noninteractive
 apt-get update -y -qq
 apt-get install -y --no-install-recommends -qq \
