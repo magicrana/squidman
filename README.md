@@ -102,8 +102,6 @@ squidman/
 ├── squid-panel.service      # Systemd service unit definition
 ├── test_suite.py            # Automated integration & regression test suite
 ├── requirements.txt         # Python dependencies (FastAPI, Uvicorn, Passlib, Bcrypt)
-├── .env.example             # Template for API keys, listening host, and ports
-├── .gitignore               # Git ignore rules for environments, caches & logs
 ├── LICENSE                  # MIT License
 ├── CONTRIBUTING.md          # Guidelines for contributing
 └── SECURITY.md              # Security policies and high-anonymity guarantee
