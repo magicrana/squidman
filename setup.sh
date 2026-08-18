@@ -198,7 +198,7 @@ else
 fi
 
 # 8. Set Up Python Virtual Environment
-echo -e "${BLUE}[8/9] Setting up Python virtual environment & installing dependencies...${NC}"
+echo -e "${LIGHTGREY}[8/9] Setting up Python virtual environment & installing dependencies...${NC}"
 python3 -m venv "${INSTALL_DIR}/venv"
 "${INSTALL_DIR}/venv/bin/pip" install --upgrade pip --quiet
 "${INSTALL_DIR}/venv/bin/pip" install -r "${INSTALL_DIR}/requirements.txt" --quiet
