@@ -3087,8 +3087,8 @@ DASHBOARD_HTML = """<!DOCTYPE html>
   <!-- Footer -->
   <footer class="border-t border-white/5 py-6 mt-auto">
     <div class="max-w-7xl mx-auto px-4 text-center text-xs text-slate-500 flex flex-col sm:flex-row items-center justify-between gap-2">
-      <p>SquidMan &bull; Crafted with ❤️ by <a target="_blank" rel="noopener noreferrer" href="https://github.com/magicrana">MagicRana</a></p>
-      <p class="font-mono text-slate-400">Multi IP &bull; Zero-Leakage</p>
+      <p>SquidMan 1.0.0 &bull; Crafted with ❤️ by <a target="_blank" rel="noopener noreferrer" href="https://github.com/magicrana">MagicRana</a></p>
+      <p class="font-mono text-slate-400">Multi IP &bull; Zero-Leakage &bull; </p>
     </div>
   </footer>
 
