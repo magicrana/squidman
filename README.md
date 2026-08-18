@@ -100,6 +100,7 @@ squidman/
 ├── squid.conf.template      # Production zero-leakage Squid configuration
 ├── squid-panel.service      # Systemd service unit definition
 ├── requirements.txt         # Python dependencies (FastAPI, Uvicorn, Passlib, Bcrypt)
+├── test_suite.py            # Automated integration & regression test suite
 ├── LICENSE                  # MIT License
 ├── CONTRIBUTING.md          # Guidelines for contributing
 └── SECURITY.md              # Security policies and high-anonymity guarantee
