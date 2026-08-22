@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """
-Production Squid Proxy Server Management Panel & REST API
+SquidMan Proxy Server Management Panel & REST API
+Version: 1.0.1
 High-Anonymity Commercial Forward Proxy Controller with:
   - Dual-Layer ACLs (Bcrypt htpasswd + Source IP Whitelisting)
   - Proxy User Management, Password Reset & Multi-IP Pool Access Editing
@@ -313,6 +314,7 @@ def is_squid_running() -> Dict[str, Any]:
 
 def reload_squid_service() -> Dict[str, Any]:
     """Trigger dynamic re-parse of Squid configuration. If stopped, start service instead."""
+    restore_interface_ips_from_meta()
     ensure_squid_conf_structure()
 
     # If Squid is NOT running, start it instead of reloading
@@ -345,6 +347,7 @@ def reload_squid_service() -> Dict[str, Any]:
 
 def restart_squid_service() -> Dict[str, Any]:
     """Restart Squid service cleanly with automatic systemd reset-failed and syntax recovery."""
+    restore_interface_ips_from_meta()
     ensure_squid_conf_structure()
 
     # Clear any previous systemd failed state so restart doesn't get blocked
@@ -390,6 +393,7 @@ def restart_squid_service() -> Dict[str, Any]:
 
 def start_squid_service() -> Dict[str, Any]:
     """Start Squid service and ensure it is unmasked and enabled in systemd."""
+    restore_interface_ips_from_meta()
     ensure_squid_conf_structure()
     execute_command(["systemctl", "unmask", "squid"], timeout=10)
     execute_command(["systemctl", "reset-failed", "squid"], timeout=10)
@@ -418,6 +422,7 @@ def start_squid_service() -> Dict[str, Any]:
 def ensure_squid_startup_service():
     """Ensure squid and network services are unmasked, enabled on system startup, and running."""
     try:
+        restore_interface_ips_from_meta()
         execute_command(["systemctl", "unmask", "squid"], timeout=10)
         execute_command(["systemctl", "enable", "squid.service"], timeout=10)
         execute_command(["systemctl", "enable", "squid"], timeout=10)
@@ -980,16 +985,19 @@ def add_secondary_ip(
         methods_used.append("iproute2")
 
     meta = load_interfaces_metadata()
+    existing_meta = meta.get(f"{interface}:{norm_ip}", {})
     now_str = time.strftime("%Y-%m-%d %H:%M:%S UTC", time.gmtime())
+    created_at = existing_meta.get("created_at") or now_str
+    final_port = port if port is not None else existing_meta.get("assigned_port")
     meta[f"{interface}:{norm_ip}"] = {
         "interface": interface,
         "ip": norm_ip,
         "cidr": cidr,
         "ip_cidr": ip_cidr,
-        "label": label or "Secondary IP",
-        "created_at": now_str,
+        "label": label or existing_meta.get("label", "Secondary IP"),
+        "created_at": created_at,
         "persistent": persistent,
-        "assigned_port": port
+        "assigned_port": final_port
     }
     save_interfaces_metadata(meta)
 
@@ -1108,6 +1116,78 @@ def remove_secondary_ip(interface: str, ip_str: str, cidr: int = 32) -> Dict[str
         "ip": norm_ip,
         "methods": methods_used or ["simulated"],
         "message": f"Secondary IP {norm_ip} removed from {interface}."
+    }
+
+
+def restore_interface_ips_from_meta() -> Dict[str, Any]:
+    """
+    Check interfaces_meta.json on service start/restart and re-add any missing secondary IPs to live network interfaces.
+    """
+    meta = load_interfaces_metadata()
+    if not meta:
+        return {"success": True, "readded_count": 0, "readded_ips": [], "failed_ips": []}
+
+    addrs = psutil.net_if_addrs()
+    live_bindings = set()
+    live_ips = set()
+
+    for iface_name, addr_list in addrs.items():
+        for a in addr_list:
+            if a.family == socket.AF_INET:
+                live_bindings.add((iface_name, a.address))
+                live_ips.add(a.address)
+
+    readded = []
+    failed = []
+
+    for meta_key, meta_val in meta.items():
+        if not isinstance(meta_val, dict):
+            continue
+
+        if ":" in meta_key:
+            parts = meta_key.split(":", 1)
+            iface = meta_val.get("interface") or parts[0]
+            ip = meta_val.get("ip") or parts[1]
+        else:
+            iface = meta_val.get("interface")
+            ip = meta_val.get("ip")
+
+        if not iface or not ip:
+            continue
+
+        if (iface, ip) not in live_bindings and ip not in live_ips:
+            cidr = meta_val.get("cidr", 32)
+            label = meta_val.get("label", "Secondary IP")
+            persistent = meta_val.get("persistent", True)
+            port = meta_val.get("assigned_port")
+
+            logger.info(f"Re-adding missing secondary IP {ip}/{cidr} on interface '{iface}' from interfaces_meta.json...")
+            try:
+                res = add_secondary_ip(
+                    interface=iface,
+                    ip_str=ip,
+                    cidr=cidr,
+                    label=label,
+                    persistent=persistent,
+                    port=port,
+                    sync_now=False
+                )
+                if res.get("success"):
+                    readded.append({"interface": iface, "ip": ip, "cidr": cidr})
+                else:
+                    failed.append({"interface": iface, "ip": ip, "error": res.get("message")})
+            except Exception as e:
+                logger.warning(f"Error re-adding missing IP {ip} on interface {iface}: {e}")
+                failed.append({"interface": iface, "ip": ip, "error": str(e)})
+
+    if readded:
+        logger.info(f"Restored {len(readded)} missing IP(s) from interfaces_meta.json to live network interfaces.")
+
+    return {
+        "success": True,
+        "readded_count": len(readded),
+        "readded_ips": readded,
+        "failed_ips": failed
     }
 
 # ------------------------------------------------------------------------------
@@ -1768,6 +1848,14 @@ async def assign_outgoing_ip_endpoint(payload: AssignOutgoingIpRequest, _: str =
 async def list_interfaces_endpoint(_: str = Depends(verify_auth)):
     """Scan and list all network interfaces, bound IP addresses, and assigned proxy ports."""
     return {"interfaces": get_network_interfaces()}
+
+
+@app.post("/api/v1/network/interfaces/restore")
+async def restore_network_interfaces(_: str = Depends(verify_auth)):
+    """Re-add any secondary IPs from interfaces_meta.json missing from live interfaces."""
+    res = restore_interface_ips_from_meta()
+    sync_outgoing_ips_conf()
+    return {"success": True, "result": res}
 
 
 @app.post("/api/v1/network/ips/preview")
@@ -3087,7 +3175,7 @@ DASHBOARD_HTML = """<!DOCTYPE html>
   <!-- Footer -->
   <footer class="border-t border-white/5 py-6 mt-auto">
     <div class="max-w-7xl mx-auto px-4 text-center text-xs text-slate-500 flex flex-col sm:flex-row items-center justify-between gap-2">
-      <p>SquidMan 1.0.0 &bull; Crafted with ❤️ by <a target="_blank" rel="noopener noreferrer" href="https://github.com/magicrana">MagicRana</a></p>
+      <p>SquidMan 1.0.1 &bull; Crafted with ❤️ by <a target="_blank" rel="noopener noreferrer" href="https://github.com/magicrana">MagicRana</a></p>
       <p class="font-mono text-slate-400">Multi IP &bull; Zero-Leakage </p>
     </div>
   </footer>
@@ -4925,6 +5013,7 @@ async def serve_dashboard():
 # ------------------------------------------------------------------------------
 if __name__ == "__main__":
     import uvicorn
+    restore_interface_ips_from_meta()
     ensure_squid_conf_structure()
     ensure_squid_startup_service()
     logger.info(f"Starting SquidMan Management Panel on http://{PANEL_HOST}:{PANEL_PORT}")
